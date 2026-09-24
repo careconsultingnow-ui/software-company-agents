@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Mileage &amp; Expense Logger</string>
+    <string name="channel_tracking_name">Mileage Tracking Service</string>
+    <string name="channel_tracking_description">Persistent foreground notification ensuring your drives are reliably logged.</string>
+    <string name="channel_trips_name">Trip Classifications</string>
+    <string name="channel_trips_description">Notifications when a drive has ended so you can classify it with one tap.</string>
+    <string name="tracking_status_active">Auto-tracking active • Route recording in progress</string>
+    <string name="tracking_status_idle">Auto-tracking standby • Waiting for vehicle motion</string>
+</resources>
