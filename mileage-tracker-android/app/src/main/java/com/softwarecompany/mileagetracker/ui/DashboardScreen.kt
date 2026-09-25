@@ -68,6 +68,8 @@ fun DashboardScreen(
 
     var selectedTripForDetails by remember { mutableStateOf<TripEntity?>(null) }
     var showAddExpenseDialog by remember { mutableStateOf(false) }
+    var showSettingsDialog by remember { mutableStateOf(false) }
+    var showOnboardingDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -116,20 +118,12 @@ fun DashboardScreen(
                         )
                     }
 
-                    // Export IRS CSV Report
-                    IconButton(onClick = {
-                        val allTripsList = viewModel.allTrips.value
-                        if (allTripsList.isEmpty()) {
-                            Toast.makeText(context, "No drives to export yet.", Toast.LENGTH_SHORT).show()
-                        } else {
-                            val shareIntent = CsvExportHelper.createShareIntent(context, allTripsList)
-                            context.startActivity(android.content.Intent.createChooser(shareIntent, "Export IRS Mileage Log"))
-                        }
-                    }) {
+                    // Settings & Vehicle Profile Button
+                    IconButton(onClick = { showSettingsDialog = true }) {
                         Icon(
-                            imageVector = Icons.Default.Share,
-                            contentDescription = "Export Report",
-                            tint = EmeraldGreen
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Settings",
+                            tint = SlateGray
                         )
                     }
                 },
@@ -567,6 +561,21 @@ fun DashboardScreen(
                 viewModel.saveExpense(newExpense)
                 Toast.makeText(context, "Expense saved", Toast.LENGTH_SHORT).show()
             }
+        )
+    }
+
+    // Driver & Vehicle Settings Dialog
+    if (showSettingsDialog) {
+        SettingsDialog(
+            onDismiss = { showSettingsDialog = false },
+            onShowOnboarding = { showOnboardingDialog = true }
+        )
+    }
+
+    // Driver Onboarding Guide Dialog
+    if (showOnboardingDialog) {
+        OnboardingDialog(
+            onDismiss = { showOnboardingDialog = false }
         )
     }
 }

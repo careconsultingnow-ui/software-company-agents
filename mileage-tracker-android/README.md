@@ -26,7 +26,8 @@ mileage-tracker-android/
 │   │   │   ├── ActivityTransitionManager.kt # Low-power Google Play Services Activity Recognition
 │   │   │   ├── ActivityTransitionReceiver.kt # BroadcastReceiver for motion & notification actions
 │   │   │   ├── BootReceiver.kt          # Restores tracking upon device reboot
-│   │   │   └── LocationFilter.kt        # Jitter/noise filter to eliminate stationary GPS drift
+│   │   │   ├── LocationFilter.kt        # Jitter/noise filter to eliminate stationary GPS drift
+│   │   │   └── BackupWorker.kt          # Scheduled WorkManager backup and archive generator
 │   │   ├── utils/
 │   │   │   ├── BatteryOptimizationHelper.kt # OEM-specific battery bypass handler
 │   │   │   ├── TaxCalculator.kt         # IRS mileage calculations ($0.67/mile)
@@ -35,18 +36,23 @@ mileage-tracker-android/
 │   │   └── ui/                          # Jetpack Compose UI
 │   │       ├── MainActivity.kt          # Runtime permissions orchestration & navigation
 │   │       ├── DashboardViewModel.kt    # StateFlow bridge between engine, filters, and UI
-│   │       ├── DashboardScreen.kt       # Material 3 Dark theme dashboard & ROI counters
+│   │       ├── DashboardScreen.kt       # Material 3 Dark theme 3-tab dashboard
 │   │       └── components/
 │   │           ├── SwipeableTripCardStack.kt # Tinder-style card deck for backlog classification
 │   │           ├── RouteMapCanvas.kt    # Native Canvas GPS telemetry & polyline visualizer
-│   │           └── TripDetailSheet.kt   # Modal bottom sheet for route & audit log inspection
+│   │           ├── TripDetailSheet.kt   # Modal bottom sheet for route & audit log inspection
+│   │           ├── AddExpenseDialog.kt  # 1099 non-mileage expense & receipt logger
+│   │           ├── ExpenseListCard.kt   # Logged expense item card
+│   │           ├── TrueNetIncomeCard.kt # 1099 gig platform income reconciliation & tax shield
+│   │           ├── OnboardingDialog.kt  # Interactive driver welcome & feature tour
+│   │           └── SettingsDialog.kt    # Vehicle profile and custom IRS rate settings
 ```
 
 ---
 
-## ⚡ Technical Capabilities
+## ⚡ Technical Capabilities Across All Phases
 
-### Sprint 1: Core Engine & Lifecycle
+### Phase 1 (Sprint 1): Core Engine & Lifecycle
 1. **Battery-Optimized 3-Tier State Machine:**
    - **IDLE_STANDBY:** Zero GPS polling. Hardware co-processor listens for `IN_VEHICLE` motion transitions.
    - **RECORDING_DRIVE:** `FusedLocationProviderClient` with distance-displacement triggers (15m threshold).
@@ -61,25 +67,40 @@ mileage-tracker-android/
    - Detects aggressive OEMs (Samsung, Xiaomi, OnePlus) and prompts users to whitelist the app from Android battery restrictions.
    - Listens to `BOOT_COMPLETED` to resume tracking automatically after device restarts.
 
-### Sprint 2: UX Polish, Tinder-Style Classification & IRS Export
+### Phase 2 (Sprint 2): Tinder-Style Classification & Route Telemetry
 1. **Tinder-Style Swipeable Card Stack (`SwipeableTripCardStack.kt`):**
    - Natural gesture tracking with directional velocity & tilt rotation.
-   - **Swipe Right:** Green stamp overlay for instant **Business** classification.
+   - **Swipe Right:** Green stamp overlay for instant **Business** classification ($0.67/mile deduction).
    - **Swipe Left:** Crimson stamp overlay for **Personal** classification.
    - **One-Tap Action Buttons:** Dedicated buttons below the deck for accessibility and single-handed use.
-   - **Instant Undo:** Reverts the previous swipe action with a single tap.
+   - **Instant Undo:** Reverts accidental swipes with a single tap.
 2. **GPS Route Map Canvas (`RouteMapCanvas.kt`):**
    - High-performance vector rendering on Jetpack Compose `Canvas`.
    - Dynamic bounding-box calculation with aspect-ratio preservation and padding.
-   - Gradient polyline strokes (Sky Blue to Emerald Green) with telemetry grid background, waypoint counter, and Start/Finish marker pins.
+   - Gradient polyline strokes (Sky Blue to Emerald Green) with telemetry grid background and Start/Finish marker pins.
 3. **Trip Telemetry & Audit Bottom Sheet (`TripDetailSheet.kt`):**
    - Inspect individual drive routes, duration, start/end timestamps, and IRS Schedule C tax deductions.
-   - Re-classify or delete trips on demand.
 4. **Dynamic Timeframe & Status Filtering:**
    - Real-time recalculation of total deductions and business miles by timeframe: **All Time**, **This Week**, **This Month**, **2026 YTD**.
-   - Filter trip list by status: **All**, **Pending**, **Business**, **Personal**.
-5. **IRS Schedule C CSV Export (`CsvExportHelper.kt`):**
-   - Generates audit-ready CSV reports containing Trip ID, Date, Start/End times, Duration, Distance, IRS Rate ($0.67/mi), and Total Deductions.
-   - Shares via Android `FileProvider` with email, cloud drives, or accounting software.
-6. **Developer Simulation Mode:**
-   - One-tap button on TopAppBar to seed realistic multi-waypoint mock drives for instant UI testing without requiring vehicle motion.
+5. **IRS Schedule C CSV Export Engine (`CsvExportHelper.kt`):**
+   - Generates audit-ready CSV reports containing Trip ID, Date, Start/End times, Duration, Distance, IRS Rate, and Total Deductions.
+
+### Phase 3 (Sprint 3): 1099 Expense Logging & True Net Income
+1. **1099 Non-Mileage Expense Logger (`AddExpenseDialog.kt`, `ExpenseListCard.kt`):**
+   - Write off fuel, tolls, parking, vehicle maintenance, insurance, phone bills, and equipment.
+   - Local photo receipt attachment support for audit proof.
+2. **"True Net Take-Home" Calculator (`TrueNetIncomeCard.kt`):**
+   - Reconciles weekly gross platform earnings (Uber, DoorDash, Lyft) against mileage depreciation and expenses.
+   - Highlights IRS cash savings and percentage of income shielded from taxes.
+3. **Scheduled WorkManager Backups (`BackupWorker.kt`):**
+   - Periodic background worker creating encrypted JSON snapshots and updated CSV logs.
+
+### Phase 4 (Final Phase): Driver Experience & Production Readiness
+1. **Interactive Driver Onboarding Tour (`OnboardingDialog.kt`):**
+   - Welcomes gig drivers, explaining background sensor tracking, fast swipe classification, and tax shielding.
+2. **Driver Vehicle Profile & Settings (`SettingsDialog.kt`):**
+   - Configure vehicle make/model and custom deduction rates.
+3. **3-Tab Navigation Bar:**
+   - Clean switching between **Drives**, **Expenses**, and **1099 Tax Shield**.
+4. **Developer Simulation Mode:**
+   - One-tap buttons in TopAppBar to seed realistic multi-waypoint mock drives and 1099 expenses for instant evaluation.
