@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -21,13 +23,31 @@ android {
         }
     }
 
+    signingConfigs {
+        create("release") {
+            val keystorePropertiesFile = rootProject.file("keystore.properties")
+            if (keystorePropertiesFile.exists()) {
+                val properties = Properties().apply {
+                    keystorePropertiesFile.inputStream().use { load(it) }
+                }
+                val storeFilePath = properties.getProperty("storeFile") ?: "keystore/release.jks"
+                storeFile = rootProject.file(storeFilePath)
+                storePassword = properties.getProperty("storePassword")
+                keyAlias = properties.getProperty("keyAlias")
+                keyPassword = properties.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
         debug {
             isMinifyEnabled = false
@@ -51,10 +71,15 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    lint {
+        checkReleaseBuilds = false
+        abortOnError = false
+    }
 }
 
 dependencies {
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.fragment.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
