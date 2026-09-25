@@ -23,12 +23,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.softwarecompany.mileagetracker.data.local.entity.ExpenseEntity
 import com.softwarecompany.mileagetracker.data.local.entity.TripClassification
 import com.softwarecompany.mileagetracker.data.local.entity.TripEntity
 import com.softwarecompany.mileagetracker.engine.EngineState
 import com.softwarecompany.mileagetracker.engine.LiveDriveStats
-import com.softwarecompany.mileagetracker.ui.components.SwipeableTripCardStack
-import com.softwarecompany.mileagetracker.ui.components.TripDetailSheet
+import com.softwarecompany.mileagetracker.ui.components.*
 import com.softwarecompany.mileagetracker.utils.CsvExportHelper
 import com.softwarecompany.mileagetracker.utils.TaxCalculator
 import java.text.SimpleDateFormat
@@ -36,6 +36,7 @@ import java.util.*
 
 val DarkBackground = Color(0xFF0B132B)
 val CardBackground = Color(0xFF1C2541)
+val DeepNavy = Color(0xFF0F172A)
 val EmeraldGreen = Color(0xFF10B981)
 val AmberWarning = Color(0xFFF59E0B)
 val CrimsonRed = Color(0xFFEF4444)
@@ -50,6 +51,7 @@ fun DashboardScreen(
     onRequestDisableBatteryOptimization: () -> Unit
 ) {
     val context = LocalContext.current
+    val currentTab by viewModel.currentTab.collectAsState()
     val liveStats by viewModel.liveStats.collectAsState()
     val totalDeduction by viewModel.timeframeDeduction.collectAsState()
     val totalMiles by viewModel.timeframeMiles.collectAsState()
@@ -60,7 +62,12 @@ fun DashboardScreen(
     val selectedStatus by viewModel.selectedStatus.collectAsState()
     val lastUndoAction by viewModel.lastUndoAction.collectAsState()
 
+    val expenses by viewModel.allExpenses.collectAsState()
+    val totalExpenses by viewModel.totalExpensesAmount.collectAsState()
+    val grossEarnings by viewModel.grossEarnings.collectAsState()
+
     var selectedTripForDetails by remember { mutableStateOf<TripEntity?>(null) }
+    var showAddExpenseDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -85,7 +92,7 @@ fun DashboardScreen(
                     }
                 },
                 actions = {
-                    // Quick seed mock drive button for instant testing
+                    // Seed mock drive button
                     IconButton(onClick = {
                         viewModel.seedSimulatedTrip()
                         Toast.makeText(context, "Mock drive added to classification queue", Toast.LENGTH_SHORT).show()
@@ -94,6 +101,18 @@ fun DashboardScreen(
                             imageVector = Icons.Default.AddLocationAlt,
                             contentDescription = "Simulate Drive",
                             tint = Color(0xFF38BDF8)
+                        )
+                    }
+
+                    // Seed mock expense button
+                    IconButton(onClick = {
+                        viewModel.seedSimulatedExpense()
+                        Toast.makeText(context, "Sample 1099 expenses added", Toast.LENGTH_SHORT).show()
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.PostAdd,
+                            contentDescription = "Sample Expense",
+                            tint = AmberWarning
                         )
                     }
 
@@ -119,6 +138,82 @@ fun DashboardScreen(
                 )
             )
         },
+        bottomBar = {
+            NavigationBar(
+                containerColor = DeepNavy,
+                tonalElevation = 8.dp
+            ) {
+                NavigationBarItem(
+                    selected = currentTab == AppDashboardTab.DRIVES,
+                    onClick = { viewModel.setTab(AppDashboardTab.DRIVES) },
+                    icon = {
+                        BadgedBox(badge = {
+                            if (unclassifiedCount > 0) {
+                                Badge(containerColor = AmberWarning) {
+                                    Text("$unclassifiedCount", color = Color.Black, fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        }) {
+                            Icon(Icons.Default.DirectionsCar, contentDescription = "Drives")
+                        }
+                    },
+                    label = { Text("Drives") },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = EmeraldGreen,
+                        selectedTextColor = EmeraldGreen,
+                        unselectedIconColor = SlateGray,
+                        unselectedTextColor = SlateGray,
+                        indicatorColor = EmeraldGreen.copy(alpha = 0.15f)
+                    )
+                )
+
+                NavigationBarItem(
+                    selected = currentTab == AppDashboardTab.EXPENSES,
+                    onClick = { viewModel.setTab(AppDashboardTab.EXPENSES) },
+                    icon = {
+                        Icon(Icons.Default.ReceiptLong, contentDescription = "Expenses")
+                    },
+                    label = { Text("Expenses") },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = EmeraldGreen,
+                        selectedTextColor = EmeraldGreen,
+                        unselectedIconColor = SlateGray,
+                        unselectedTextColor = SlateGray,
+                        indicatorColor = EmeraldGreen.copy(alpha = 0.15f)
+                    )
+                )
+
+                NavigationBarItem(
+                    selected = currentTab == AppDashboardTab.TAX_INCOME,
+                    onClick = { viewModel.setTab(AppDashboardTab.TAX_INCOME) },
+                    icon = {
+                        Icon(Icons.Default.Savings, contentDescription = "Tax Shield")
+                    },
+                    label = { Text("Tax Shield") },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = EmeraldGreen,
+                        selectedTextColor = EmeraldGreen,
+                        unselectedIconColor = SlateGray,
+                        unselectedTextColor = SlateGray,
+                        indicatorColor = EmeraldGreen.copy(alpha = 0.15f)
+                    )
+                )
+            }
+        },
+        floatingActionButton = {
+            if (currentTab == AppDashboardTab.EXPENSES) {
+                ExtendedFloatingActionButton(
+                    onClick = { showAddExpenseDialog = true },
+                    containerColor = EmeraldGreen,
+                    contentColor = Color.Black,
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Icon(imageVector = Icons.Default.Add, contentDescription = "Add")
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Log Expense", fontWeight = FontWeight.Bold)
+                }
+            }
+        },
         containerColor = DarkBackground
     ) { innerPadding ->
         LazyColumn(
@@ -128,124 +223,316 @@ fun DashboardScreen(
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 1. Battery Optimization Warning Banner (If not exempted)
+            // Battery Optimization Warning Banner
             if (!isIgnoringBattery) {
                 item {
                     BatteryWarningBanner(onRequestDisable = onRequestDisableBatteryOptimization)
                 }
             }
 
-            // 2. Real-Time ROI Tax Savings Summary Card
-            item {
-                RoiSummaryCard(
-                    totalDeductions = totalDeduction,
-                    totalMiles = totalMiles,
-                    unclassifiedCount = unclassifiedCount,
-                    selectedTimeframe = selectedTimeframe,
-                    onSelectTimeframe = { viewModel.setTimeframe(it) }
-                )
-            }
-
-            // 3. Live Drive Recording Banner (Dynamic State)
-            item {
-                LiveDriveBanner(
-                    stats = liveStats,
-                    onStartDrive = { viewModel.startManualDrive() },
-                    onStopDrive = { viewModel.stopManualDrive() }
-                )
-            }
-
-            // 4. Tinder-Style Swipeable Card Stack for Backlog Classification
-            item {
-                SwipeableTripCardStack(
-                    unclassifiedTrips = unclassifiedTrips,
-                    onClassify = { trip, classification ->
-                        viewModel.classifyTrip(trip.id, classification)
-                    },
-                    canUndo = lastUndoAction != null,
-                    onUndoLastClassification = {
-                        viewModel.undoLastClassification()
-                        Toast.makeText(context, "Reverted last classification", Toast.LENGTH_SHORT).show()
-                    },
-                    onViewDetails = { trip ->
-                        selectedTripForDetails = trip
-                    }
-                )
-            }
-
-            // 5. Trip History Filter Header & Tabs
-            item {
-                Column(modifier = Modifier.padding(top = 8.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Drives History (${filteredTrips.size})",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
+            when (currentTab) {
+                AppDashboardTab.DRIVES -> {
+                    // 1. Real-Time ROI Tax Savings Summary Card
+                    item {
+                        RoiSummaryCard(
+                            totalDeductions = totalDeduction,
+                            totalMiles = totalMiles,
+                            unclassifiedCount = unclassifiedCount,
+                            selectedTimeframe = selectedTimeframe,
+                            onSelectTimeframe = { viewModel.setTimeframe(it) }
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(10.dp))
+                    // 2. Live Drive Recording Banner (Dynamic State)
+                    item {
+                        LiveDriveBanner(
+                            stats = liveStats,
+                            onStartDrive = { viewModel.startManualDrive() },
+                            onStopDrive = { viewModel.stopManualDrive() }
+                        )
+                    }
 
-                    // Status Filter Chips
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        items(StatusFilter.values()) { filter ->
-                            FilterChip(
-                                selected = selectedStatus == filter,
-                                onClick = { viewModel.setStatusFilter(filter) },
-                                label = { Text(filter.label) },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = EmeraldGreen,
-                                    selectedLabelColor = Color.Black,
-                                    containerColor = CardBackground,
-                                    labelColor = SlateGray
-                                )
+                    // 3. Tinder-Style Swipeable Card Stack
+                    item {
+                        SwipeableTripCardStack(
+                            unclassifiedTrips = unclassifiedTrips,
+                            onClassify = { trip, classification ->
+                                viewModel.classifyTrip(trip.id, classification)
+                            },
+                            canUndo = lastUndoAction != null,
+                            onUndoLastClassification = {
+                                viewModel.undoLastClassification()
+                                Toast.makeText(context, "Reverted last classification", Toast.LENGTH_SHORT).show()
+                            },
+                            onViewDetails = { trip ->
+                                selectedTripForDetails = trip
+                            }
+                        )
+                    }
+
+                    // 4. Trip History Header & Filters
+                    item {
+                        Column(modifier = Modifier.padding(top = 8.dp)) {
+                            Text(
+                                text = "Drives History (${filteredTrips.size})",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                items(StatusFilter.values()) { filter ->
+                                    FilterChip(
+                                        selected = selectedStatus == filter,
+                                        onClick = { viewModel.setStatusFilter(filter) },
+                                        label = { Text(filter.label) },
+                                        colors = FilterChipDefaults.filterChipColors(
+                                            selectedContainerColor = EmeraldGreen,
+                                            selectedLabelColor = Color.Black,
+                                            containerColor = CardBackground,
+                                            labelColor = SlateGray
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // 5. Trip History List
+                    if (filteredTrips.isEmpty()) {
+                        item {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(containerColor = CardBackground),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(24.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "No drives found matching the selected filters.",
+                                        color = SlateGray,
+                                        fontSize = 14.sp
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        items(filteredTrips, key = { it.id }) { trip ->
+                            TripCard(
+                                trip = trip,
+                                onClassify = { classification ->
+                                    viewModel.classifyTrip(trip.id, classification)
+                                },
+                                onClick = {
+                                    selectedTripForDetails = trip
+                                }
                             )
                         }
                     }
                 }
-            }
 
-            // 6. Trip History Cards
-            if (filteredTrips.isEmpty()) {
-                item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = CardBackground),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(24.dp),
-                            contentAlignment = Alignment.Center
+                AppDashboardTab.EXPENSES -> {
+                    // Total Expenses Summary Card
+                    item {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(containerColor = CardBackground),
+                            shape = RoundedCornerShape(16.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(20.dp)) {
+                                Text(
+                                    text = "1099 DEDUCTIBLE EXPENSES",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = SlateGray,
+                                    letterSpacing = 1.sp
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = TaxCalculator.formatCurrency(totalExpenses),
+                                    fontSize = 36.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = EmeraldGreen
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = "${expenses.size} receipts & out-of-pocket expenses logged",
+                                    fontSize = 13.sp,
+                                    color = SlateGray
+                                )
+                            }
+                        }
+                    }
+
+                    // Expenses List Header
+                    item {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "No drives found matching the selected filters.",
-                                color = SlateGray,
-                                fontSize = 14.sp
+                                text = "All Logged Expenses",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                            TextButton(onClick = { showAddExpenseDialog = true }) {
+                                Icon(Icons.Default.Add, contentDescription = null, tint = EmeraldGreen)
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("Add", color = EmeraldGreen, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+
+                    if (expenses.isEmpty()) {
+                        item {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(containerColor = CardBackground),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(32.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Icon(
+                                            imageVector = Icons.Default.ReceiptLong,
+                                            contentDescription = null,
+                                            tint = SlateGray,
+                                            modifier = Modifier.size(40.dp)
+                                        )
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        Text(
+                                            text = "No expenses logged yet.\nTap 'Log Expense' to write off gas, tolls, or car maintenance.",
+                                            color = SlateGray,
+                                            fontSize = 13.sp,
+                                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        items(expenses, key = { it.id }) { expense ->
+                            ExpenseListCard(
+                                expense = expense,
+                                onDelete = { viewModel.deleteExpense(it) }
                             )
                         }
                     }
                 }
-            } else {
-                items(filteredTrips, key = { it.id }) { trip ->
-                    TripCard(
-                        trip = trip,
-                        onClassify = { classification ->
-                            viewModel.classifyTrip(trip.id, classification)
-                        },
-                        onClick = {
-                            selectedTripForDetails = trip
+
+                AppDashboardTab.TAX_INCOME -> {
+                    // True Net & 1099 Reconciliation Card
+                    item {
+                        TrueNetIncomeCard(
+                            totalMileageDeductions = totalDeduction,
+                            totalExpenses = totalExpenses,
+                            grossEarnings = grossEarnings,
+                            onGrossEarningsChanged = { viewModel.setGrossEarnings(it) }
+                        )
+                    }
+
+                    // IRS Schedule C Audit Ready Card
+                    item {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(containerColor = CardBackground),
+                            shape = RoundedCornerShape(16.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(20.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column {
+                                        Text(
+                                            text = "IRS SCHEDULE C SUMMARY",
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = SlateGray,
+                                            letterSpacing = 1.sp
+                                        )
+                                        Text(
+                                            text = "Audit-Ready Mileage & Receipts",
+                                            fontSize = 16.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = LightText
+                                        )
+                                    }
+                                    Icon(
+                                        imageVector = Icons.Default.FactCheck,
+                                        contentDescription = "Audit",
+                                        tint = EmeraldGreen,
+                                        modifier = Modifier.size(28.dp)
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.height(14.dp))
+                                Divider(color = Color(0xFF2E3856), thickness = 1.dp)
+                                Spacer(modifier = Modifier.height(14.dp))
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text("Standard Mileage Write-off:", color = SlateGray, fontSize = 13.sp)
+                                    Text(TaxCalculator.formatCurrency(totalDeduction), color = LightText, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text("Non-Mileage Operating Expenses:", color = SlateGray, fontSize = 13.sp)
+                                    Text(TaxCalculator.formatCurrency(totalExpenses), color = LightText, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text("Combined Tax Write-Off:", color = EmeraldGreen, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                    Text(TaxCalculator.formatCurrency(totalDeduction + totalExpenses), color = EmeraldGreen, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp)
+                                }
+
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                Button(
+                                    onClick = {
+                                        val allTripsList = viewModel.allTrips.value
+                                        if (allTripsList.isEmpty()) {
+                                            Toast.makeText(context, "No drives to export yet.", Toast.LENGTH_SHORT).show()
+                                        } else {
+                                            val shareIntent = CsvExportHelper.createShareIntent(context, allTripsList)
+                                            context.startActivity(android.content.Intent.createChooser(shareIntent, "Export IRS Report"))
+                                        }
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = ButtonDefaults.buttonColors(containerColor = EmeraldGreen),
+                                    shape = RoundedCornerShape(10.dp)
+                                ) {
+                                    Icon(Icons.Default.Download, contentDescription = null, tint = Color.Black)
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("Export Complete IRS Report (CSV)", color = Color.Black, fontWeight = FontWeight.Bold)
+                                }
+                            }
                         }
-                    )
+                    }
                 }
             }
 
@@ -268,6 +555,17 @@ fun DashboardScreen(
                 viewModel.deleteTrip(it)
                 selectedTripForDetails = null
                 Toast.makeText(context, "Trip deleted", Toast.LENGTH_SHORT).show()
+            }
+        )
+    }
+
+    // Add Expense Dialog
+    if (showAddExpenseDialog) {
+        AddExpenseDialog(
+            onDismiss = { showAddExpenseDialog = false },
+            onSaveExpense = { newExpense ->
+                viewModel.saveExpense(newExpense)
+                Toast.makeText(context, "Expense saved", Toast.LENGTH_SHORT).show()
             }
         )
     }

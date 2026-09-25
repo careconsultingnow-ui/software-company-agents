@@ -3,11 +3,17 @@ package com.softwarecompany.mileagetracker.ui
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.softwarecompany.mileagetracker.MileageTrackerApp
+import com.softwarecompany.mileagetracker.data.local.entity.ExpenseCategory
+import com.softwarecompany.mileagetracker.data.local.entity.ExpenseEntity
 import com.softwarecompany.mileagetracker.data.local.entity.TripClassification
 import com.softwarecompany.mileagetracker.data.local.entity.TripEntity
 import com.softwarecompany.mileagetracker.data.repository.TripRepository
 import com.softwarecompany.mileagetracker.engine.ActivityTransitionManager
+import com.softwarecompany.mileagetracker.engine.BackupWorker
 import com.softwarecompany.mileagetracker.engine.LiveDriveStats
 import com.softwarecompany.mileagetracker.engine.LocationTrackingService
 import com.softwarecompany.mileagetracker.utils.TaxCalculator
@@ -16,6 +22,7 @@ import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 enum class TimeframeFilter(val label: String) {
     ALL("All Time"),
@@ -29,6 +36,12 @@ enum class StatusFilter(val label: String) {
     UNCLASSIFIED("Pending"),
     BUSINESS("Business"),
     PERSONAL("Personal")
+}
+
+enum class AppDashboardTab(val label: String) {
+    DRIVES("Drives"),
+    EXPENSES("Expenses"),
+    TAX_INCOME("1099 Tax Shield")
 }
 
 data class UndoAction(
@@ -45,12 +58,18 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
     private val activityTransitionManager = ActivityTransitionManager(application)
 
+    // Current active UI tab
+    val currentTab = MutableStateFlow(AppDashboardTab.DRIVES)
+
     // Live Engine State from Background Service
     val liveStats: StateFlow<LiveDriveStats> = LocationTrackingService.liveStats
 
     // Filters
     val selectedTimeframe = MutableStateFlow(TimeframeFilter.ALL)
     val selectedStatus = MutableStateFlow(StatusFilter.ALL)
+
+    // Gross platform earnings for 1099 reconciliation
+    val grossEarnings = MutableStateFlow(0.0)
 
     // Undo stack for one-tap reversal of accidental swipes
     val lastUndoAction = MutableStateFlow<UndoAction?>(null)
@@ -60,6 +79,19 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
+    )
+
+    // All expenses from Room DB
+    val allExpenses: StateFlow<List<ExpenseEntity>> = repository.allExpenses.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
+
+    val totalExpensesAmount: StateFlow<Double> = repository.totalExpensesAmount.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = 0.0
     )
 
     // Unclassified Trips specifically for Tinder-style swipe queue
@@ -128,10 +160,18 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         initialValue = 0
     )
 
+    init {
+        schedulePeriodicBackup()
+    }
+
     fun initializeEngine() {
         viewModelScope.launch {
             activityTransitionManager.registerTransitions()
         }
+    }
+
+    fun setTab(tab: AppDashboardTab) {
+        currentTab.value = tab
     }
 
     fun setTimeframe(filter: TimeframeFilter) {
@@ -140,6 +180,10 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun setStatusFilter(filter: StatusFilter) {
         selectedStatus.value = filter
+    }
+
+    fun setGrossEarnings(amount: Double) {
+        grossEarnings.value = amount
     }
 
     fun classifyTrip(tripId: String, classification: TripClassification) {
@@ -166,6 +210,18 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
+    fun saveExpense(expense: ExpenseEntity) {
+        viewModelScope.launch {
+            repository.saveExpense(expense)
+        }
+    }
+
+    fun deleteExpense(expense: ExpenseEntity) {
+        viewModelScope.launch {
+            (getApplication() as MileageTrackerApp).database.expenseDao().deleteExpense(expense)
+        }
+    }
+
     fun startManualDrive() {
         LocationTrackingService.startRecording(getApplication(), "MANUAL_TEST")
     }
@@ -175,14 +231,13 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     /**
-     * Seeds a realistic mock drive with waypoints for quick verification of swipe deck and map canvas.
+     * Seeds realistic mock trips for verification of swipe deck and map canvas.
      */
     fun seedSimulatedTrip(distanceMiles: Double = 6.4) {
         viewModelScope.launch {
             val now = System.currentTimeMillis()
-            val start = now - (22 * 60 * 1000) // 22 minutes ago
+            val start = now - (22 * 60 * 1000)
 
-            // Generate realistic mock waypoints (Denver area / downtown trajectory)
             val baseLat = 39.7392
             val baseLng = -104.9903
             val coordinates = JSONArray()
@@ -211,6 +266,47 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
             )
             repository.saveTrip(mockTrip)
         }
+    }
+
+    /**
+     * Seeds realistic mock 1099 business expenses.
+     */
+    fun seedSimulatedExpense() {
+        viewModelScope.launch {
+            val sampleExpenses = listOf(
+                ExpenseEntity(
+                    id = UUID.randomUUID().toString(),
+                    dateTimestamp = System.currentTimeMillis() - (2 * 3600 * 1000),
+                    amount = 48.50,
+                    category = ExpenseCategory.FUEL,
+                    merchantName = "Shell Gas Station",
+                    notes = "Fill-up for weekend courier shift"
+                ),
+                ExpenseEntity(
+                    id = UUID.randomUUID().toString(),
+                    dateTimestamp = System.currentTimeMillis() - (24 * 3600 * 1000),
+                    amount = 12.75,
+                    category = ExpenseCategory.PARKING_TOLLS,
+                    merchantName = "EZPass Express Lanes",
+                    notes = "Airport rideshare toll"
+                )
+            )
+            for (e in sampleExpenses) {
+                repository.saveExpense(e)
+            }
+        }
+    }
+
+    private fun schedulePeriodicBackup() {
+        val backupRequest = PeriodicWorkRequestBuilder<BackupWorker>(
+            7, TimeUnit.DAYS
+        ).build()
+
+        WorkManager.getInstance(getApplication()).enqueueUniquePeriodicWork(
+            "MileageTrackerBackup",
+            ExistingPeriodicWorkPolicy.KEEP,
+            backupRequest
+        )
     }
 
     private fun getTimeframeCutoff(timeframe: TimeframeFilter): Long {
