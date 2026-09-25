@@ -1,9 +1,13 @@
 package com.softwarecompany.mileagetracker.ui
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -22,6 +27,9 @@ import com.softwarecompany.mileagetracker.data.local.entity.TripClassification
 import com.softwarecompany.mileagetracker.data.local.entity.TripEntity
 import com.softwarecompany.mileagetracker.engine.EngineState
 import com.softwarecompany.mileagetracker.engine.LiveDriveStats
+import com.softwarecompany.mileagetracker.ui.components.SwipeableTripCardStack
+import com.softwarecompany.mileagetracker.ui.components.TripDetailSheet
+import com.softwarecompany.mileagetracker.utils.CsvExportHelper
 import com.softwarecompany.mileagetracker.utils.TaxCalculator
 import java.text.SimpleDateFormat
 import java.util.*
@@ -31,7 +39,8 @@ val CardBackground = Color(0xFF1C2541)
 val EmeraldGreen = Color(0xFF10B981)
 val AmberWarning = Color(0xFFF59E0B)
 val CrimsonRed = Color(0xFFEF4444)
-val SlateGray = Color(0xFF64748B)
+val SlateGray = Color(0xFF94A3B8)
+val LightText = Color(0xFFF8FAFC)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,11 +49,18 @@ fun DashboardScreen(
     isIgnoringBattery: Boolean,
     onRequestDisableBatteryOptimization: () -> Unit
 ) {
+    val context = LocalContext.current
     val liveStats by viewModel.liveStats.collectAsState()
-    val totalDeduction by viewModel.totalDeduction.collectAsState()
-    val totalMiles by viewModel.totalMiles.collectAsState()
+    val totalDeduction by viewModel.timeframeDeduction.collectAsState()
+    val totalMiles by viewModel.timeframeMiles.collectAsState()
+    val unclassifiedTrips by viewModel.unclassifiedTrips.collectAsState()
     val unclassifiedCount by viewModel.unclassifiedCount.collectAsState()
-    val recentTrips by viewModel.recentTrips.collectAsState()
+    val filteredTrips by viewModel.filteredTrips.collectAsState()
+    val selectedTimeframe by viewModel.selectedTimeframe.collectAsState()
+    val selectedStatus by viewModel.selectedStatus.collectAsState()
+    val lastUndoAction by viewModel.lastUndoAction.collectAsState()
+
+    var selectedTripForDetails by remember { mutableStateOf<TripEntity?>(null) }
 
     Scaffold(
         topBar = {
@@ -63,7 +79,38 @@ fun DashboardScreen(
                         Text(
                             text = "Auto-Mileage Logger",
                             fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            color = Color.White,
+                            fontSize = 18.sp
+                        )
+                    }
+                },
+                actions = {
+                    // Quick seed mock drive button for instant testing
+                    IconButton(onClick = {
+                        viewModel.seedSimulatedTrip()
+                        Toast.makeText(context, "Mock drive added to classification queue", Toast.LENGTH_SHORT).show()
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.AddLocationAlt,
+                            contentDescription = "Simulate Drive",
+                            tint = Color(0xFF38BDF8)
+                        )
+                    }
+
+                    // Export IRS CSV Report
+                    IconButton(onClick = {
+                        val allTripsList = viewModel.allTrips.value
+                        if (allTripsList.isEmpty()) {
+                            Toast.makeText(context, "No drives to export yet.", Toast.LENGTH_SHORT).show()
+                        } else {
+                            val shareIntent = CsvExportHelper.createShareIntent(context, allTripsList)
+                            context.startActivity(android.content.Intent.createChooser(shareIntent, "Export IRS Mileage Log"))
+                        }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.Share,
+                            contentDescription = "Export Report",
+                            tint = EmeraldGreen
                         )
                     }
                 },
@@ -93,7 +140,9 @@ fun DashboardScreen(
                 RoiSummaryCard(
                     totalDeductions = totalDeduction,
                     totalMiles = totalMiles,
-                    unclassifiedCount = unclassifiedCount
+                    unclassifiedCount = unclassifiedCount,
+                    selectedTimeframe = selectedTimeframe,
+                    onSelectTimeframe = { viewModel.setTimeframe(it) }
                 )
             }
 
@@ -106,19 +155,66 @@ fun DashboardScreen(
                 )
             }
 
-            // 4. Recent Drives Header
+            // 4. Tinder-Style Swipeable Card Stack for Backlog Classification
             item {
-                Text(
-                    text = "Recent Drives",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White,
-                    modifier = Modifier.padding(top = 8.dp)
+                SwipeableTripCardStack(
+                    unclassifiedTrips = unclassifiedTrips,
+                    onClassify = { trip, classification ->
+                        viewModel.classifyTrip(trip.id, classification)
+                    },
+                    canUndo = lastUndoAction != null,
+                    onUndoLastClassification = {
+                        viewModel.undoLastClassification()
+                        Toast.makeText(context, "Reverted last classification", Toast.LENGTH_SHORT).show()
+                    },
+                    onViewDetails = { trip ->
+                        selectedTripForDetails = trip
+                    }
                 )
             }
 
-            // 5. Trip Classification List
-            if (recentTrips.isEmpty()) {
+            // 5. Trip History Filter Header & Tabs
+            item {
+                Column(modifier = Modifier.padding(top = 8.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Drives History (${filteredTrips.size})",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // Status Filter Chips
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        items(StatusFilter.values()) { filter ->
+                            FilterChip(
+                                selected = selectedStatus == filter,
+                                onClick = { viewModel.setStatusFilter(filter) },
+                                label = { Text(filter.label) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = EmeraldGreen,
+                                    selectedLabelColor = Color.Black,
+                                    containerColor = CardBackground,
+                                    labelColor = SlateGray
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+
+            // 6. Trip History Cards
+            if (filteredTrips.isEmpty()) {
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -132,7 +228,7 @@ fun DashboardScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "No drives recorded yet.\nStart your vehicle or tap 'Simulate Drive' to test.",
+                                text = "No drives found matching the selected filters.",
                                 color = SlateGray,
                                 fontSize = 14.sp
                             )
@@ -140,20 +236,40 @@ fun DashboardScreen(
                     }
                 }
             } else {
-                items(recentTrips, key = { it.id }) { trip ->
+                items(filteredTrips, key = { it.id }) { trip ->
                     TripCard(
                         trip = trip,
                         onClassify = { classification ->
                             viewModel.classifyTrip(trip.id, classification)
+                        },
+                        onClick = {
+                            selectedTripForDetails = trip
                         }
                     )
                 }
             }
 
             item {
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(32.dp))
             }
         }
+    }
+
+    // Modal Bottom Sheet for inspecting Route Map & full telemetry
+    selectedTripForDetails?.let { trip ->
+        TripDetailSheet(
+            trip = trip,
+            onDismiss = { selectedTripForDetails = null },
+            onClassify = { classification ->
+                viewModel.classifyTrip(trip.id, classification)
+                selectedTripForDetails = trip.copy(classification = classification)
+            },
+            onDeleteTrip = {
+                viewModel.deleteTrip(it)
+                selectedTripForDetails = null
+                Toast.makeText(context, "Trip deleted", Toast.LENGTH_SHORT).show()
+            }
+        )
     }
 }
 
@@ -183,7 +299,7 @@ fun BatteryWarningBanner(onRequestDisable: () -> Unit) {
                     color = Color.White
                 )
                 Text(
-                    text = "Grant exemption so your phone doesn't kill trip tracking.",
+                    text = "Grant exemption so Android doesn't kill trip tracking.",
                     fontSize = 12.sp,
                     color = Color(0xFFD1D5DB)
                 )
@@ -199,7 +315,9 @@ fun BatteryWarningBanner(onRequestDisable: () -> Unit) {
 fun RoiSummaryCard(
     totalDeductions: Double,
     totalMiles: Double,
-    unclassifiedCount: Int
+    unclassifiedCount: Int,
+    selectedTimeframe: TimeframeFilter,
+    onSelectTimeframe: (TimeframeFilter) -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -207,14 +325,42 @@ fun RoiSummaryCard(
         shape = RoundedCornerShape(16.dp)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
-            Text(
-                text = "ESTIMATED TAX SAVINGS (SCHEDULE C)",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                color = SlateGray,
-                letterSpacing = 1.sp
-            )
-            Spacer(modifier = Modifier.height(6.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "TAX SAVINGS (SCHEDULE C)",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = SlateGray,
+                    letterSpacing = 1.sp
+                )
+
+                // Timeframe Selector Chips
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    TimeframeFilter.values().forEach { tf ->
+                        val isSelected = selectedTimeframe == tf
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(if (isSelected) EmeraldGreen else Color(0xFF2E3856))
+                                .clickable { onSelectTimeframe(tf) }
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = tf.label.replace("Time", "").trim(),
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (isSelected) Color.Black else SlateGray
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = TaxCalculator.formatCurrency(totalDeductions),
                 fontSize = 36.sp,
@@ -229,7 +375,7 @@ fun RoiSummaryCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Column {
-                    Text(text = "Business Miles", fontSize = 12.sp, color = SlateGray)
+                    Text(text = "Business Miles (${selectedTimeframe.label})", fontSize = 12.sp, color = SlateGray)
                     Text(
                         text = TaxCalculator.formatMiles(totalMiles),
                         fontSize = 16.sp,
@@ -296,9 +442,10 @@ fun LiveDriveBanner(
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     Text(
-                        text = if (isRecording) "Stop" else "Simulate Drive",
+                        text = if (isRecording) "Stop" else "Manual Drive",
                         fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = if (isRecording) Color.White else Color.Black
                     )
                 }
             }
@@ -345,13 +492,16 @@ fun LiveDriveBanner(
 @Composable
 fun TripCard(
     trip: TripEntity,
-    onClassify: (TripClassification) -> Unit
+    onClassify: (TripClassification) -> Unit,
+    onClick: () -> Unit
 ) {
     val dateFormat = remember { SimpleDateFormat("EEE, MMM d • h:mm a", Locale.getDefault()) }
     val dateString = remember(trip.startTimestamp) { dateFormat.format(Date(trip.startTimestamp)) }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
         colors = CardDefaults.cardColors(containerColor = CardBackground),
         shape = RoundedCornerShape(14.dp)
     ) {
