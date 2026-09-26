@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Automated Mileage & Expense Logger - Android MVP Test Bench</title>
+    <!-- Leaflet CSS for Map rendering -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body>
+    <!-- Top Workbench Header -->
+    <header class="workbench-header">
+      <div class="brand-section">
+        <span class="brand-badge">ANDROID MVP</span>
+        <span class="brand-title">Auto-Mileage & Expense Logger</span>
+        <span class="brand-subtitle">Interactive Hardware & Engine Test Bench</span>
+      </div>
+
+      <div class="header-actions">
+        <button id="btn-reset-data" class="btn-header" title="Reset to initial state">
+          <span class="material-symbols-rounded">restart_alt</span>
+          Reset DB
+        </button>
+        <button id="btn-export-csv" class="btn-header" title="Export Schedule C Tax Log">
+          <span class="material-symbols-rounded">download</span>
+          Export Tax CSV
+        </button>
+        <button id="btn-view-tax-summary" class="btn-header btn-primary" title="View IRS Schedule C Deductions">
+          <span class="material-symbols-rounded">receipt_long</span>
+          Schedule C Summary
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="workbench-content">
+      
+      <!-- LEFT: Realistic Android Phone Frame Running the Native UI -->
+      <section class="device-container">
+        <div class="device-frame">
+          <div class="camera-cutout"></div>
+
+          <!-- Android Status Bar -->
+          <div class="android-status-bar">
+            <span id="android-clock">9:41</span>
+            <div class="status-bar-icons">
+              <span class="material-symbols-rounded" style="font-size: 16px;">near_me</span>
+              <span class="material-symbols-rounded" style="font-size: 16px;">wifi</span>
+              <span class="material-symbols-rounded" style="font-size: 16px;">battery_full</span>
+            </div>
+          </div>
+
+          <!-- Android Heads-up Push Notification for Drive Completion -->
+          <div id="heads-up-notification" class="heads-up-notification">
+            <div class="notif-header">
+              <div class="notif-app-tag">
+                <span class="material-symbols-rounded" style="font-size: 14px;">directions_car</span>
+                Mileage Logger • Just now
+              </div>
+              <span class="notif-time" id="notif-clock">9:41 AM</span>
+            </div>
+            <div class="notif-body-title" id="notif-title">Trip Completed: 8.4 mi</div>
+            <div class="notif-body-text" id="notif-desc">Estimated deduction: $5.63. Tap below to classify.</div>
+            <div class="notif-actions">
+              <button id="notif-biz-btn" class="notif-btn notif-btn-biz">Business ($)</button>
+              <button id="notif-pers-btn" class="notif-btn notif-btn-pers">Personal</button>
+            </div>
+          </div>
+
+          <!-- App TopBar -->
+          <div class="app-topbar">
+            <div class="app-title-group">
+              <div id="status-led" class="status-led"></div>
+              <span class="app-title">Auto-Mileage Logger</span>
+            </div>
+            <span class="material-symbols-rounded" style="color: #64748B; cursor: pointer;">more_vert</span>
+          </div>
+
+          <!-- Scrollable App Screen Content (Jetpack Compose Replicate) -->
+          <div class="app-screen-content">
+
+            <!-- 1. Battery Optimization Warning Banner -->
+            <div id="battery-warning-banner" class="battery-warning-card">
+              <span class="material-symbols-rounded warning-icon">warning</span>
+              <div class="warning-texts">
+                <div class="warning-title">Background Protection Required</div>
+                <div class="warning-desc">Grant exemption so your phone doesn't kill trip tracking.</div>
+              </div>
+              <button id="btn-fix-battery" class="btn-fix">FIX</button>
+            </div>
+
+            <!-- 2. Real-Time ROI Tax Savings Summary Card -->
+            <div class="roi-card">
+              <div class="roi-subtitle">ESTIMATED TAX SAVINGS (SCHEDULE C)</div>
+              <div id="total-deduction-text" class="roi-amount">$0.00</div>
+              <div class="roi-divider"></div>
+              <div class="roi-stats-row">
+                <div>
+                  <div class="stat-label">Business Miles</div>
+                  <div id="total-miles-text" class="stat-value">0.0 mi</div>
+                </div>
+                <div style="text-align: right;">
+                  <div class="stat-label">Pending Classification</div>
+                  <div id="unclassified-count-text" class="stat-value pending">0 drives</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. Live Drive Recording Banner -->
+            <div id="live-drive-card" class="live-drive-card">
+              <div class="live-header-row">
+                <div class="live-status-group">
+                  <span id="live-car-icon" class="material-symbols-rounded live-car-icon">sensors</span>
+                  <span id="live-status-title" class="live-status-text">AUTO-DETECTION STANDBY</span>
+                </div>
+                <button id="btn-drive-action" class="btn-drive-action">Simulate Drive</button>
+              </div>
+
+              <!-- Real-time metrics shown during recording or cooldown -->
+              <div id="live-metrics-row" class="live-metrics-row" style="display: none;">
+                <div>
+                  <div class="metric-label">Current Distance</div>
+                  <div id="live-distance" class="metric-val">0.0 mi</div>
+                </div>
+                <div>
+                  <div class="metric-label">Deduction Accrued</div>
+                  <div id="live-deduction" class="metric-val">$0.00</div>
+                </div>
+                <div>
+                  <div class="metric-label">Waypoints</div>
+                  <div id="live-waypoints" class="metric-val">0</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. Recent Drives Header -->
+            <div class="section-header">Recent Drives</div>
+
+            <!-- 5. Trips List Container -->
+            <div id="trips-list" class="trips-list">
+              <!-- Dynamically populated -->
+            </div>
+
+          </div>
+
+          <!-- Android Bottom Gesture Bar -->
+          <div class="android-nav-bar">
+            <div class="nav-gesture-pill"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT: Interactive Hardware & GPS Telemetry Console -->
+      <section class="studio-console">
+
+        <!-- 1. GPS Route Simulation Studio -->
+        <div class="panel-card">
+          <div class="panel-title-bar">
+            <span class="panel-title">
+              <span class="material-symbols-rounded" style="color: #38bdf8;">route</span>
+              GPS Route & Hardware Simulation
+            </span>
+            <span id="route-playback-status" class="brand-badge" style="background: #1e293b; color: #94a3b8;">STANDBY</span>
+          </div>
+
+          <div class="route-controls-grid">
+            <select id="select-route" class="custom-select">
+              <option value="route-airport">Airport Ride & Courier Run (14.2 mi)</option>
+              <option value="route-delivery">Downtown Courier Delivery (3.8 mi)</option>
+              <option value="route-suburban">Suburban Client Meeting (7.6 mi)</option>
+            </select>
+
+            <select id="select-speed" class="custom-select">
+              <option value="1">1x Speed</option>
+              <option value="2">2x Speed</option>
+              <option value="5" selected>5x Speed (Fast Test)</option>
+              <option value="10">10x Speed (Instant)</option>
+            </select>
+
+            <div class="btn-control-group">
+              <button id="btn-start-route" class="btn-ctrl active" title="Start Driving Simulation">
+                <span class="material-symbols-rounded">play_arrow</span>
+                Drive
+              </button>
+              <button id="btn-pause-route" class="btn-ctrl" title="Pause / Park Vehicle">
+                <span class="material-symbols-rounded">pause</span>
+              </button>
+              <button id="btn-stop-route" class="btn-ctrl" title="Stop & Finalize Drive">
+                <span class="material-symbols-rounded">stop</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Leaflet Live Map -->
+          <div class="map-container-wrapper">
+            <div id="map"></div>
+            <div class="map-overlay-badge">
+              <span class="material-symbols-rounded" style="font-size: 14px;">satellite_alt</span>
+              <span id="map-telemetry-text">GPS Lock • 12 Satellites</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Hardware Activity Recognition Triggers & Noise Filter Demo -->
+        <div class="panel-card">
+          <div class="panel-title-bar">
+            <span class="panel-title">
+              <span class="material-symbols-rounded" style="color: #a855f7;">sensors_event</span>
+              Activity Recognition Transitions & Noise Filtering
+            </span>
+          </div>
+
+          <div class="hardware-triggers-row">
+            <button id="btn-trigger-in-vehicle" class="btn-sensor" title="Google Play Services Activity Recognition">
+              <span class="material-symbols-rounded">directions_car</span>
+              <span>IN_VEHICLE<br><small style="color: var(--slate); font-weight: normal;">Starts Tracking</small></span>
+            </button>
+            <button id="btn-trigger-still" class="btn-sensor" title="Vehicle parked at destination">
+              <span class="material-symbols-rounded">local_parking</span>
+              <span>STILL / PARKED<br><small style="color: var(--slate); font-weight: normal;">4-Min Cooldown</small></span>
+            </button>
+            <button id="btn-trigger-walking" class="btn-sensor" title="Driver exits vehicle to deliver package">
+              <span class="material-symbols-rounded">directions_walk</span>
+              <span>WALKING<br><small style="color: var(--slate); font-weight: normal;">4-Min Cooldown</small></span>
+            </button>
+            <button id="btn-toggle-battery-mode" class="btn-sensor" title="Test OEM Process Killer resilience">
+              <span class="material-symbols-rounded">battery_alert</span>
+              <span>OEM BATTERY<br><small id="oem-battery-text" style="color: var(--amber); font-weight: normal;">Restricted</small></span>
+            </button>
+          </div>
+
+          <!-- Red Light & Jitter Filter Demonstration -->
+          <div class="feature-toggle-card">
+            <div class="toggle-info">
+              <span class="toggle-title">Inject Red-Light GPS Jitter & Low Accuracy</span>
+              <span class="toggle-desc">Demonstrates LocationFilter.kt rejecting stationary drift (&lt;0.5m/s) and inaccurate fixes (&gt;25m)</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggle-gps-jitter" />
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- 3. Engine & Room SQLite Telemetry Console -->
+        <div class="panel-card">
+          <div class="panel-title-bar">
+            <span class="panel-title">
+              <span class="material-symbols-rounded" style="color: #34d399;">terminal</span>
+              Live Engine & Room SQLite Telemetry Feed
+            </span>
+            <button id="btn-clear-logs" class="btn-header" style="padding: 4px 8px; font-size: 11px;">Clear Log</button>
+          </div>
+
+          <div id="telemetry-logs" class="telemetry-log-console">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Schedule C IRS Deduction Modal -->
+    <div id="modal-tax-summary" class="modal-backdrop">
+      <div class="modal-box">
+        <div class="modal-header">
+          <div class="modal-title">IRS Schedule C Tax Deductions (Form 1040)</div>
+          <button id="btn-close-modal" class="btn-close-modal">&times;</button>
+        </div>
+        <p style="font-size: 12px; color: var(--slate); margin-bottom: 16px;">
+          Calculated according to official standard IRS mileage rate for business use ($0.67 per mile).
+        </p>
+
+        <table class="modal-tax-summary-table">
+          <tbody>
+            <tr>
+              <td>Standard IRS Business Rate</td>
+              <td style="color: var(--emerald);">$0.67 / mile</td>
+            </tr>
+            <tr>
+              <td>Total Recorded Business Miles</td>
+              <td id="modal-biz-miles">0.0 mi</td>
+            </tr>
+            <tr>
+              <td>Total Deductible Tax Savings</td>
+              <td id="modal-biz-deduction" style="color: var(--emerald); font-size: 18px;">$0.00</td>
+            </tr>
+            <tr>
+              <td>Personal / Non-Deductible Miles</td>
+              <td id="modal-pers-miles">0.0 mi</td>
+            </tr>
+            <tr>
+              <td>Unclassified Trips Pending Review</td>
+              <td id="modal-pending-count" style="color: var(--amber);">0 trips</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+          <button id="btn-modal-close" class="btn-header">Close</button>
+          <button id="btn-modal-download-csv" class="btn-header btn-primary">Download IRS Log CSV</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
