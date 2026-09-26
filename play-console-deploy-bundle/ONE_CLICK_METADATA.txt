@@ -1,0 +1,63 @@
+================================================================================
+GOOGLE PLAY CONSOLE - ONE-CLICK METADATA FIELDS (AutoMileage: 1099 Tax Tracker)
+================================================================================
+
+[FIELD 1: APP NAME (Max 30 chars)]
+AutoMileage: 1099 Tax Tracker
+
+[FIELD 2: SHORT DESCRIPTION (Max 80 chars)]
+Automatic mileage & 1099 expense tracker. Maximize IRS Schedule C write-offs.
+
+[FIELD 3: FULL DESCRIPTION (Max 4,000 chars)]
+Stop leaving thousands of dollars with the IRS.
+
+Whether you drive for Uber, Lyft, DoorDash, Instacart, Amazon Flex, or run your own independent business as a 1099 contractor, freelancer, or real estate agent, every mile you drive is money in your pocket. At the standard IRS mileage rate (67¢ per business mile), an unlogged 1,000 miles is $670 lost in tax write-offs.
+
+AutoMileage is the intelligent, battery-conscious, and privacy-first mileage and expense tracking app built specifically for gig workers and self-employed professionals.
+
+WHY GIG WORKERS & CONTRACTORS CHOOSE AUTOMILEAGE:
+
+1. 100% Automatic Trip Detection
+Never forget to log a trip again. AutoMileage silently runs in the background using Android's intelligent Activity Recognition and stationary geofencing. It automatically starts logging when you start driving and stops when your vehicle parks—consuming less than 1.8% battery per 8-hour shift.
+
+2. Tinder-Style Swipe Classification
+Classify drives in seconds. Swipe RIGHT to classify a drive as Business and instantly accrue Schedule C deductions. Swipe LEFT to mark as Personal. Made a mistake? Tap Undo to instantly restore.
+
+3. Private GPS Route Visualizer
+Inspect full vector GPS route maps with start/stop timestamps, total distance, calculated tax deduction value, and IRS audit-compliant breadcrumb telemetry. Best of all: route rendering runs 100% offline directly on your device canvas without external map API tracking.
+
+4. 1099 Deductible Expense Logger
+Track more than just miles. Log gig expenses including Fuel, Parking & Tolls, Vehicle Maintenance, Cell Phone Service, Hot Bags, and Cleaning Supplies. Categorize expenses with custom notes and audit-ready receipt dates.
+
+5. "True Net" Take-Home Income Calculator
+Know your actual hourly take-home pay. Enter your gross weekly payout from Uber, DoorDash, or client invoices, and AutoMileage calculates:
+- Total combined deductions (Miles + Expenses)
+- Estimated IRS Cash Tax Shield
+- True Net Profit and percentage of income shielded from self-employment taxes
+
+6. 1-Tap IRS Schedule C CSV Export
+Tax season made effortless. Generate audit-ready CSV reports filtered by All Time, This Week, or This Month. Send directly to your accountant, TurboTax, H&R Block, or save to Google Drive with all required IRS fields: date, purpose, vehicle, start/end locations, miles, and dollar deduction.
+
+7. 100% Offline-First & Private
+Your driving data belongs to you—not advertisers or data brokers. AutoMileage stores all telemetry and receipts locally on your device in an encrypted Room SQLite database. No account creation required, no cloud subscriptions, no tracking.
+
+PERFECT FOR:
+- Rideshare Drivers: Uber, Lyft, Alto, Taxi operators
+- Delivery Couriers: DoorDash, Uber Eats, Instacart, Grubhub, Spark, Amazon Flex
+- Mobile Professionals: Real estate agents, traveling nurses, field sales reps
+- Trades & Freelancers: Electricians, plumbers, photographers, consultants
+
+Download AutoMileage today and claim every dollar you deserve.
+
+[FIELD 4: RELEASE NOTES (v1.0.0)]
+Initial release of AutoMileage: 1099 Tax Tracker.
+- Automatic hands-free drive detection with battery-conscious geofencing.
+- Tinder-style swipe classification (Right = Business, Left = Personal).
+- Offline vector GPS route visualizer with audit telemetry.
+- 1099 deductible receipt & expense logger.
+- True Net Take-Home income and IRS Cash Shield calculator.
+- 1-tap IRS Schedule C CSV export.
+
+[FIELD 5: PRIVACY POLICY URL]
+https://careconsultingnow-ui.github.io/software-company-agents/web-landing-page/privacy.html
+(or local file: web-landing-page/privacy.html)

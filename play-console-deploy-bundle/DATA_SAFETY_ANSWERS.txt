@@ -1,0 +1,40 @@
+================================================================================
+GOOGLE PLAY CONSOLE - DATA SAFETY & PERMISSIONS REVIEW CHEATSHEET
+================================================================================
+
+1. DATA COLLECTION & SHARING QUESTIONNAIRE:
+--------------------------------------------------------------------------------
+Q: Does your app collect or share any of the required user data types?
+A: NO (Select "No" - because all data is stored exclusively on the user's device
+   in local SQLite Room DB and is never transmitted to developer servers).
+
+If Google Play asks about local processing:
+- Approximate & Precise Location: Processed ephemerally / stored on device only.
+  Purpose: App functionality (Trip Distance & Tax Deductions).
+  Shared: NO (0%).
+- Financial Info (User earnings / expenses): Stored on device only.
+  Purpose: App functionality (Tax Shield & True Net calculation).
+  Shared: NO (0%).
+
+2. LOCATION PERMISSION JUSTIFICATION (ACCESS_BACKGROUND_LOCATION):
+--------------------------------------------------------------------------------
+Copy and paste this verbatim into the review box:
+
+"AutoMileage is an automated mileage tracker engineered for gig workers (rideshare and delivery couriers). Drivers cannot safely interact with their mobile device while operating a motor vehicle. Background location enables hands-free detection and logging of driving routes when the user begins vehicular transit, ensuring accurate tax deduction records for IRS Schedule C compliance. Telemetry data is stored 100% locally on the device in an encrypted Room SQLite database and is never transmitted to external cloud servers."
+
+3. FOREGROUND SERVICE JUSTIFICATION (FOREGROUND_SERVICE_LOCATION):
+--------------------------------------------------------------------------------
+Type: Location
+Notification: "AutoMileage Active — Recording drive for Schedule C deductions"
+Justification:
+"The foreground service ensures continuous, uninterrupted GPS waypoint logging during an active business trip without being terminated by Android's low-memory killer, ensuring the driver does not lose tax write-off miles."
+
+4. TARGET AUDIENCE:
+--------------------------------------------------------------------------------
+Ages 18 and over (Gig economy independent contractors and business professionals).
+Does your app appeal to children? NO.
+
+5. CATEGORY & TAGS:
+--------------------------------------------------------------------------------
+Category: Business or Finance
+Tags: Business, Finance, Productivity, Travel & Local
