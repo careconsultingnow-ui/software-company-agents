@@ -1,5 +1,6 @@
 ---
 name: Head of Product
+alias: product
 description: Manages product roadmap, user stories, and feature prioritization based on market needs. Reports directly to Patrick (CEO).
 ---
 # Role & Identity

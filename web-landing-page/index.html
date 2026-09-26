@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AutoMileage — Automated Mileage & 1099 Expense Tracker</title>
+  <meta name="description" content="The 100% private, battery-conscious mileage and 1099 tax deduction tracker for gig workers, rideshare drivers, and independent contractors. Zero subscriptions, unlimited drives.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+  <!-- Background Ambient Glow Orbs -->
+  <div class="ambient-glow glow-top-left" aria-hidden="true"></div>
+  <div class="ambient-glow glow-top-right" aria-hidden="true"></div>
+  <div class="ambient-glow glow-center" aria-hidden="true"></div>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="#hero" class="nav-logo" id="nav-logo">
+        <span class="logo-dot"></span>
+        <span class="logo-title">AutoMileage</span>
+        <span class="logo-badge">1099</span>
+      </a>
+      <div class="nav-links">
+        <a href="#features" class="nav-link">Features</a>
+        <a href="#interactive-demo" class="nav-link">Swipe Demo</a>
+        <a href="#calculator" class="nav-link">Tax Calculator</a>
+        <a href="#comparison" class="nav-link">Why Us</a>
+        <a href="#faq" class="nav-link">FAQ</a>
+      </div>
+      <div class="nav-actions">
+        <a href="#download" class="btn btn-primary btn-sm" id="nav-download-cta">Get v1.0 Free</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero-section" id="hero">
+    <div class="hero-container">
+      <div class="hero-content">
+        <div class="hero-pill">
+          <span class="pill-beacon"></span>
+          <span>Android 14-16 Ready &bull; IRS 2024–2026 Rate (67¢/mi)</span>
+        </div>
+        <h1 class="hero-title">
+          Stop Leaving Thousands With The IRS. <br>
+          <span class="text-gradient">Track Every Mile. Slash 1099 Taxes.</span>
+        </h1>
+        <p class="hero-description">
+          The ultra-lightweight, 100% private mileage and expense logger built specifically for Uber, Lyft, DoorDash, and independent contractors. Zero monthly subscriptions, no 40-drive paywalls, and less than 1.8% battery usage per shift.
+        </p>
+
+        <!-- Trust Badges -->
+        <div class="trust-grid">
+          <div class="trust-item">
+            <span class="trust-icon">⚡</span>
+            <span><strong>1.45 MB</strong> Binary Size</span>
+          </div>
+          <div class="trust-item">
+            <span class="trust-icon">🔒</span>
+            <span><strong>100% Offline</strong> &amp; Private</span>
+          </div>
+          <div class="trust-item">
+            <span class="trust-icon">🔋</span>
+            <span><strong>&lt; 1.8%</strong> Shift Battery</span>
+          </div>
+          <div class="trust-item">
+            <span class="trust-icon">📋</span>
+            <span><strong>IRS Schedule C</strong> Audit CSV</span>
+          </div>
+        </div>
+
+        <div class="hero-buttons">
+          <a href="#download" class="btn btn-primary btn-lg" id="hero-download-btn">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+            Download Free Release APK (1.45 MB)
+          </a>
+          <a href="#calculator" class="btn btn-secondary btn-lg" id="hero-calc-btn">
+            Calculate Your Tax Savings
+          </a>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="feature-graphic-card">
+          <img src="assets/feature-graphic.jpg" alt="AutoMileage 1099 Tax Tracker Google Play Banner" class="hero-feature-img" id="hero-feature-graphic">
+          <div class="floating-badge badge-top">
+            <span class="badge-icon">💰</span>
+            <div class="badge-text">
+              <span class="badge-label">Avg. Annual Tax Shield</span>
+              <strong class="badge-value">+$4,894 Saved</strong>
+            </div>
+          </div>
+          <div class="floating-badge badge-bottom">
+            <span class="badge-icon">📍</span>
+            <div class="badge-text">
+              <span class="badge-label">Drive Classification</span>
+              <strong class="badge-value">1-Swipe IRS Ready</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Interactive Swipe Experience -->
+  <section class="section-demo" id="interactive-demo">
+    <div class="section-container">
+      <div class="section-header text-center">
+        <span class="section-tag">Interactive Experience</span>
+        <h2 class="section-title">Classify Drives In Under 1 Second</h2>
+        <p class="section-subtitle">Swipe <strong>RIGHT</strong> to claim Schedule C tax write-offs. Swipe <strong>LEFT</strong> for personal errands.</p>
+      </div>
+
+      <div class="demo-wrapper">
+        <div class="demo-card-container">
+          <div class="mock-phone-frame">
+            <div class="phone-screen">
+              <div class="phone-top-bar">
+                <span class="phone-status">AUTO-DETECTION STANDBY</span>
+                <span class="phone-time">5:25 PM</span>
+              </div>
+
+              <!-- Interactive Swipe Card Deck -->
+              <div class="swipe-deck" id="swipeDeck">
+                <div class="swipe-card active-card" id="demoTripCard">
+                  <div class="card-header-badge">
+                    <span class="badge-category">🚗 UNCLASSIFIED TRIP</span>
+                    <span class="badge-distance" id="demoCardDistance">6.4 mi</span>
+                  </div>
+                  <div class="card-deduction-hero">
+                    <span class="deduction-label">IRS Potential Write-Off</span>
+                    <span class="deduction-value" id="demoCardDeduction">+$4.29</span>
+                  </div>
+                  <div class="card-route-preview">
+                    <div class="route-line-mock">
+                      <span class="route-dot start-dot"></span>
+                      <span class="route-path"></span>
+                      <span class="route-dot end-dot"></span>
+                    </div>
+                    <div class="route-labels">
+                      <span class="route-loc" id="demoCardStart">Downtown Courier Hub</span>
+                      <span class="route-loc" id="demoCardEnd">West Lake Delivery</span>
+                    </div>
+                  </div>
+                  <div class="card-footer-info">
+                    <span>⏱ 14 mins</span>
+                    <span>📍 18 GPS Waypoints</span>
+                  </div>
+                </div>
+
+                <!-- Empty State shown when all swiped -->
+                <div class="deck-empty-state" id="deckEmptyState" style="display: none;">
+                  <div class="empty-icon-circle">✓</div>
+                  <h3>All Drives Classified!</h3>
+                  <p>Great job! All drives accounted for Schedule C tax deductions.</p>
+                  <button class="btn btn-secondary btn-sm" id="resetDeckBtn">Reset Interactive Cards</button>
+                </div>
+              </div>
+
+              <!-- Swipe Action Buttons -->
+              <div class="swipe-controls">
+                <button class="swipe-btn btn-personal" id="swipeLeftBtn" title="Classify as Personal">
+                  <span class="swipe-icon">✕</span>
+                  <span>Personal</span>
+                </button>
+                <button class="swipe-btn btn-undo" id="undoSwipeBtn" title="Undo last swipe">
+                  <span class="swipe-icon">↺</span>
+                  <span>Undo</span>
+                </button>
+                <button class="swipe-btn btn-business" id="swipeRightBtn" title="Classify as Business">
+                  <span class="swipe-icon">✓</span>
+                  <span>Business ($)</span>
+                </button>
+              </div>
+
+              <!-- Dynamic Counter Feedback -->
+              <div class="demo-stats-bar">
+                <div class="stat-box">
+                  <span class="stat-label">Accrued Tax Write-Off:</span>
+                  <strong class="stat-value text-green" id="demoTotalDeductions">$4.29</strong>
+                </div>
+                <div class="stat-box">
+                  <span class="stat-label">Business Miles:</span>
+                  <strong class="stat-value text-blue" id="demoTotalMiles">6.4 mi</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-explanation">
+          <div class="feature-callout">
+            <div class="callout-icon">⚡</div>
+            <div class="callout-content">
+              <h3>Tinder-Style Quick Sort</h3>
+              <p>Turn hours of painful paper mileage logs into a 30-second weekly ritual. One swipe locks your IRS compliance in place.</p>
+            </div>
+          </div>
+          <div class="feature-callout">
+            <div class="callout-icon">🗺️</div>
+            <div class="callout-content">
+              <h3>Offline Vector GPS Visualizer</h3>
+              <p>Every drive records an audit-proof breadcrumb trail with full route polyline previews, completely offline without third-party tracking APIs.</p>
+            </div>
+          </div>
+          <div class="feature-callout">
+            <div class="callout-icon">🛡️</div>
+            <div class="callout-content">
+              <h3>IRS Audit Proofing</h3>
+              <p>Stores exact start/stop timestamps, distances, vehicle information, and business purposes conforming to Treasury Regulation &sect; 1.274-5T.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Tax Savings & True Net Calculator -->
+  <section class="section-calc" id="calculator">
+    <div class="section-container">
+      <div class="section-header text-center">
+        <span class="section-tag">Interactive Calculator</span>
+        <h2 class="section-title">Calculate Your 1099 Cash Shield</h2>
+        <p class="section-subtitle">Discover how much cold, hard cash AutoMileage protects from federal and self-employment taxes.</p>
+      </div>
+
+      <div class="calc-card">
+        <div class="calc-inputs-pane">
+          <div class="calc-field">
+            <div class="field-header">
+              <label for="grossEarningsInput">Weekly Gross Payout (Uber / DoorDash / Clients)</label>
+              <span class="field-val" id="grossEarningsDisplay">$1,250</span>
+            </div>
+            <input type="range" id="grossEarningsInput" min="200" max="3500" step="50" value="1250" class="range-slider">
+            <span class="slider-hint">$200 &mdash; $3,500 / week</span>
+          </div>
+
+          <div class="calc-field">
+            <div class="field-header">
+              <label for="businessMilesInput">Weekly Business Driving Miles</label>
+              <span class="field-val" id="businessMilesDisplay">450 mi</span>
+            </div>
+            <input type="range" id="businessMilesInput" min="50" max="1500" step="25" value="450" class="range-slider">
+            <span class="slider-hint">Standard IRS Mileage Rate = <strong>$0.67 / mile</strong></span>
+          </div>
+
+          <div class="calc-field">
+            <div class="field-header">
+              <label for="expensesInput">Weekly Non-Mileage Expenses (Gas, Tolls, Cell, Gear)</label>
+              <span class="field-val" id="expensesDisplay">$65</span>
+            </div>
+            <input type="range" id="expensesInput" min="0" max="300" step="5" value="65" class="range-slider">
+            <span class="slider-hint">Tracked via AutoMileage's 1099 Expense Logger</span>
+          </div>
+
+          <div class="calc-field">
+            <div class="field-header">
+              <label for="taxBracketSelect">Estimated Tax Bracket (Federal + 15.3% Self-Employment)</label>
+              <span class="field-val" id="taxBracketDisplay">27%</span>
+            </div>
+            <select id="taxBracketSelect" class="calc-select">
+              <option value="0.22">Modest Income (~22% combined tax)</option>
+              <option value="0.27" selected>Average Gig Worker (~27% combined tax)</option>
+              <option value="0.32">Higher Income (~32% combined tax)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="calc-results-pane">
+          <div class="results-shield-header">
+            <span class="shield-icon">🛡️</span>
+            <div>
+              <span class="shield-title">ESTIMATED ANNUAL CASH TAX SHIELD</span>
+              <div class="shield-dollar" id="annualCashShield">$5,145.40</div>
+              <span class="shield-sub">Cash that stays in your bank account every year</span>
+            </div>
+          </div>
+
+          <div class="results-breakdown-grid">
+            <div class="breakdown-card">
+              <span class="b-label">Weekly Standard Mileage Write-off</span>
+              <strong class="b-value text-green" id="weeklyMileageDeduction">$301.50</strong>
+            </div>
+            <div class="breakdown-card">
+              <span class="b-label">Weekly Total Deductions (Miles + Expenses)</span>
+              <strong class="b-value text-cyan" id="weeklyTotalDeduction">$366.50</strong>
+            </div>
+            <div class="breakdown-card">
+              <span class="b-label">Weekly Net Taxable Income</span>
+              <strong class="b-value text-white" id="weeklyNetTaxable">$883.50</strong>
+            </div>
+            <div class="breakdown-card">
+              <span class="b-label">Income Shielded From Self-Employment Tax</span>
+              <strong class="b-value text-green" id="percentShielded">29.3%</strong>
+            </div>
+          </div>
+
+          <div class="results-cta">
+            <p class="cta-note">Don't lose $5,000+ to unlogged drives. AutoMileage logs it all automatically.</p>
+            <a href="#download" class="btn btn-primary btn-block">Claim Your Write-Offs Now</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Showcase Gallery Section -->
+  <section class="section-showcase" id="features">
+    <div class="section-container">
+      <div class="section-header text-center">
+        <span class="section-tag">Production Verified Features</span>
+        <h2 class="section-title">Built For The Reality Of Gig Work</h2>
+        <p class="section-subtitle">Real Android screenshots captured from our live test devices.</p>
+      </div>
+
+      <div class="gallery-grid">
+        <!-- Feature 1 -->
+        <div class="gallery-item">
+          <div class="gallery-img-box">
+            <img src="assets/01_swipe_classification.png" alt="Tinder style drive card swipe" class="gallery-img">
+          </div>
+          <div class="gallery-info">
+            <span class="feature-tag">1-Swipe Classification</span>
+            <h3>Tinder-Style Card Deck</h3>
+            <p>Classify drives in seconds with zero cognitive fatigue. Swipe right to claim business write-offs or left for personal drives.</p>
+          </div>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="gallery-item">
+          <div class="gallery-img-box">
+            <img src="assets/02_route_visualizer_telemetry.png" alt="Vector GPS route visualizer" class="gallery-img">
+          </div>
+          <div class="gallery-info">
+            <span class="feature-tag">Offline Route Visualizer</span>
+            <h3>Vector GPS Canvas</h3>
+            <p>Audit-ready GPS routes drawn on a high-speed vector canvas. Verified start/end locations, duration, distance, and 18-point telemetry.</p>
+          </div>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="gallery-item">
+          <div class="gallery-img-box">
+            <img src="assets/03_1099_expenses_logged.png" alt="1099 Expense Logger receipts" class="gallery-img">
+          </div>
+          <div class="gallery-info">
+            <span class="feature-tag">1099 Expense Logger</span>
+            <h3>Receipt &amp; Expense Tracking</h3>
+            <p>Log fuel, tolls, parking, cell phone, and vehicle maintenance. Group expenses by category with audit dates and notes.</p>
+          </div>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="gallery-item">
+          <div class="gallery-img-box">
+            <img src="assets/04_tax_shield_true_net.png" alt="1099 Tax Shield and True Net Calculator" class="gallery-img">
+          </div>
+          <div class="gallery-info">
+            <span class="feature-tag">True Net Payout</span>
+            <h3>1099 Tax Shield Calculator</h3>
+            <p>Know your real take-home pay. Combines mileage deductions with expenses to reveal true profits and cash protected from taxes.</p>
+          </div>
+        </div>
+
+        <!-- Feature 5 -->
+        <div class="gallery-item">
+          <div class="gallery-img-box">
+            <img src="assets/05_vehicle_settings_profile.png" alt="Vehicle Profile & IRS Settings" class="gallery-img">
+          </div>
+          <div class="gallery-info">
+            <span class="feature-tag">Audit Settings</span>
+            <h3>Vehicle Profile &amp; IRS Rate</h3>
+            <p>Store your vehicle make/model and customize standard mileage rates (defaulting to the 2024–2026 IRS standard rate of 67¢/mile).</p>
+          </div>
+        </div>
+
+        <!-- Feature 6 -->
+        <div class="gallery-item">
+          <div class="gallery-img-box">
+            <img src="assets/06_dashboard_roi_tracker.png" alt="Live Shift ROI Tracker" class="gallery-img">
+          </div>
+          <div class="gallery-info">
+            <span class="feature-tag">Background Efficiency</span>
+            <h3>Silent Shift Radar</h3>
+            <p>Stationary geofencing and Activity Recognition sleep modes ensure background logging consumes under 1.8% battery per 8-hour shift.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Comparison Matrix -->
+  <section class="section-comparison" id="comparison">
+    <div class="section-container">
+      <div class="section-header text-center">
+        <span class="section-tag">Unbeatable Value</span>
+        <h2 class="section-title">Why Drivers Are Leaving MileIQ &amp; Everlance</h2>
+        <p class="section-subtitle">No monthly subscriptions. No tracking SDKs. No 40-drive paywalls.</p>
+      </div>
+
+      <div class="table-responsive">
+        <table class="comp-table">
+          <thead>
+            <tr>
+              <th>Feature / Capability</th>
+              <th class="col-highlight">AutoMileage</th>
+              <th>MileIQ</th>
+              <th>Everlance</th>
+              <th>Stride</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Pricing Model</strong></td>
+              <td class="col-highlight"><span class="badge-free">100% Free Core</span></td>
+              <td>$5.99 / mo ($59.99/yr)</td>
+              <td>$8.00 / mo ($60/yr)</td>
+              <td>Free (Ad/Insurtech Lead Gen)</td>
+            </tr>
+            <tr>
+              <td><strong>Drive Limits</strong></td>
+              <td class="col-highlight"><strong class="text-green">Unlimited Free</strong></td>
+              <td>40 drives/month limit</td>
+              <td>30 drives/month limit</td>
+              <td>Unlimited</td>
+            </tr>
+            <tr>
+              <td><strong>Privacy &amp; Data Storage</strong></td>
+              <td class="col-highlight"><strong class="text-green">100% Offline (Local SQLite)</strong></td>
+              <td>Cloud Tracked</td>
+              <td>Cloud Tracked</td>
+              <td>Cloud Tracked</td>
+            </tr>
+            <tr>
+              <td><strong>Download Size</strong></td>
+              <td class="col-highlight"><strong class="text-green">1.45 MB</strong></td>
+              <td>~75 MB</td>
+              <td>~85 MB</td>
+              <td>~90 MB</td>
+            </tr>
+            <tr>
+              <td><strong>Battery Impact (8h Shift)</strong></td>
+              <td class="col-highlight"><strong class="text-green">&lt; 1.8%</strong></td>
+              <td>5% &ndash; 10%</td>
+              <td>6% &ndash; 12%</td>
+              <td>4% &ndash; 8%</td>
+            </tr>
+            <tr>
+              <td><strong>True Net Take-Home Calc</strong></td>
+              <td class="col-highlight"><span class="text-green">✓ Built-in Native</span></td>
+              <td>❌ No</td>
+              <td>❌ No</td>
+              <td>❌ No</td>
+            </tr>
+            <tr>
+              <td><strong>Integrated 1099 Expense Logger</strong></td>
+              <td class="col-highlight"><span class="text-green">✓ Included</span></td>
+              <td>Mileage Only</td>
+              <td>Premium Tier Required</td>
+              <td>Basic</td>
+            </tr>
+            <tr>
+              <td><strong>Account / Sign-Up Required</strong></td>
+              <td class="col-highlight"><strong class="text-green">None (Instant Open)</strong></td>
+              <td>Mandatory Sign-up</td>
+              <td>Mandatory Sign-up</td>
+              <td>Mandatory Sign-up</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section class="section-faq" id="faq">
+    <div class="section-container">
+      <div class="section-header text-center">
+        <span class="section-tag">Frequently Asked Questions</span>
+        <h2 class="section-title">Everything You Need To Know</h2>
+      </div>
+
+      <div class="faq-accordion">
+        <div class="faq-item">
+          <button class="faq-trigger" aria-expanded="false">
+            <span>How does AutoMileage detect drives without draining my battery?</span>
+            <span class="faq-chevron">+</span>
+          </button>
+          <div class="faq-content">
+            <p>AutoMileage uses Android's native <strong>Activity Recognition Transitions API</strong>. When your phone detects stationary pedestrian movement, GPS hardware remains asleep. Only when vehicular transit is detected does the high-accuracy fused location provider engage. This results in less than 1.8% battery usage across an entire 8-hour shift.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-trigger" aria-expanded="false">
+            <span>Is this compliant with IRS Schedule C tax audit rules?</span>
+            <span class="faq-chevron">+</span>
+          </button>
+          <div class="faq-content">
+            <p>Yes. The IRS standard for deductible business vehicle use (Treasury Reg. &sect; 1.274-5T) requires timely recordkeeping of: (1) date, (2) mileage, (3) destination/location, and (4) business purpose. AutoMileage records every required field and exports complete CSV records formatted specifically for Schedule C filings.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-trigger" aria-expanded="false">
+            <span>Why is there no monthly subscription or account signup?</span>
+            <span class="faq-chevron">+</span>
+          </button>
+          <div class="faq-content">
+            <p>We built AutoMileage with an offline-first architecture. Because your data is stored locally in your phone's encrypted Room SQLite database rather than on costly cloud servers, we do not have huge recurring cloud overhead to pass onto you. You own your data—no accounts, no passwords, no subscriptions.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-trigger" aria-expanded="false">
+            <span>Can I export my data to TurboTax, H&amp;R Block, or my CPA?</span>
+            <span class="faq-chevron">+</span>
+          </button>
+          <div class="faq-content">
+            <p>Yes. With one tap, AutoMileage generates an audit-ready CSV file of your business mileage and 1099 operating expenses filtered by All-Time, This Week, or This Month. You can easily share this file with your accountant or import it into your tax filing software.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-trigger" aria-expanded="false">
+            <span>How is my location privacy protected?</span>
+            <span class="faq-chevron">+</span>
+          </button>
+          <div class="faq-content">
+            <p>Zero tracking SDKs. Zero advertising networks. AutoMileage runs 100% on your device. We do not operate remote telemetry servers, and we never sell, share, or analyze your driving patterns.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Download CTA Section -->
+  <section class="section-download" id="download">
+    <div class="section-container">
+      <div class="download-card">
+        <div class="download-content text-center">
+          <div class="download-pill">Version 1.0.0 Now Available</div>
+          <h2 class="download-title">Start Protecting Your Hard-Earned Gig Income</h2>
+          <p class="download-sub">Download the production-signed release APK directly, or enroll in our Google Play Internal Testing Track.</p>
+          
+          <div class="download-actions">
+            <a href="assets/app-release.apk" class="btn btn-primary btn-lg" id="direct-apk-download" download>
+              <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+              Download Signed APK (1.45 MB)
+            </a>
+            <a href="https://play.google.com/apps/testing/com.softwarecompany.mileagetracker" class="btn btn-secondary btn-lg" id="play-store-track-btn" target="_blank" rel="noopener">
+              <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M3 20.5v-17c0-.83.67-1.5 1.5-1.5.34 0 .66.12.92.33l14.21 8.53c.63.38.84 1.19.46 1.82-.12.2-.28.36-.46.47L5.42 21.67c-.26.21-.58.33-.92.33-.83 0-1.5-.67-1.5-1.5z"/></svg>
+              Google Play Internal Track
+            </a>
+          </div>
+
+          <div class="download-meta">
+            <span>MD5: <code>verified</code></span> &bull; 
+            <span>Package: <code>com.softwarecompany.mileagetracker</code></span> &bull; 
+            <span>Min Android: <code>8.0+ (Oreo to Android 16)</code></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-brand">
+        <span class="logo-dot"></span>
+        <span class="logo-title">AutoMileage</span>
+        <p class="footer-motto">Built with pride for gig workers, rideshare couriers, and self-employed professionals.</p>
+      </div>
+      <div class="footer-links">
+        <a href="#features">Features</a>
+        <a href="#calculator">Tax Calculator</a>
+        <a href="privacy.html" id="footer-privacy-link">Privacy Policy</a>
+        <a href="https://github.com" target="_blank" rel="noopener">GitHub</a>
+      </div>
+    </div>
+    <div class="footer-bottom text-center">
+      <p>&copy; 2026 Software Company LLC. All rights reserved. IRS Standard Mileage Rate 67¢/mi applicable for qualified business transit.</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

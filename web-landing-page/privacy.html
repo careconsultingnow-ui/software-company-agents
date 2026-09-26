@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — AutoMileage: 1099 Tax Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-dot"></span>
+        <span class="logo-title">AutoMileage</span>
+      </a>
+      <div class="nav-actions">
+        <a href="index.html" class="btn btn-secondary btn-sm">&larr; Back to App</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="privacy-container">
+    <article class="privacy-article">
+      <h1>Privacy Policy for AutoMileage: 1099 Tax Tracker</h1>
+      <p class="privacy-date">Last Updated: September 25, 2026 &bull; Effective Date: September 25, 2026</p>
+
+      <section class="privacy-section">
+        <h2>1. Zero Cloud Data Collection &amp; Absolute Privacy</h2>
+        <p>At <strong>Software Company LLC</strong>, we believe your driving routes, locations, and financial data belong to you alone. AutoMileage is built with a strict <strong>offline-first architecture</strong>:</p>
+        <ul>
+          <li>We do <strong>not</strong> operate user telemetry or tracking servers.</li>
+          <li>We do <strong>not</strong> sell, rent, or share personal data with third-party advertisers or data brokers.</li>
+          <li>We embed <strong>zero</strong> commercial tracking SDKs, advertising frameworks, or behavior analytics tools.</li>
+          <li>No user account, email address, phone number, or password is ever required to operate the application.</li>
+        </ul>
+      </section>
+
+      <section class="privacy-section">
+        <h2>2. Data Handled Strictly On Your Local Device</h2>
+        <p>All application records are stored exclusively in your device's private SQLite Room database (<code>mileagetracker.db</code>):</p>
+        <ul>
+          <li><strong>Location Data (GPS Waypoints):</strong> AutoMileage requests <code>ACCESS_FINE_LOCATION</code>, <code>ACCESS_COARSE_LOCATION</code>, and <code>ACCESS_BACKGROUND_LOCATION</code> solely to detect routes, measure driving distances, and calculate standard mileage deductions when vehicular movement is detected.</li>
+          <li><strong>Physical Activity:</strong> AutoMileage utilizes <code>ACTIVITY_RECOGNITION</code> transitions to detect vehicular transit and enter stationary low-power sleep modes to conserve battery.</li>
+          <li><strong>Financial &amp; Expense Data:</strong> Amounts, receipt dates, vendor names, and vehicle profiles are retained strictly on-device.</li>
+        </ul>
+      </section>
+
+      <section class="privacy-section">
+        <h2>3. Background Location &amp; Foreground Service</h2>
+        <p>To safely record trips without requiring driver distraction, AutoMileage operates an Android Foreground Service with type <code>location</code> accompanied by a persistent notification in your status bar. Background GPS tracking runs only while active vehicular transit is occurring.</p>
+      </section>
+
+      <section class="privacy-section">
+        <h2>4. User Data Exports &amp; Deletion</h2>
+        <p>You may export your data at any time as an IRS Schedule C CSV report or encrypted backup file. You can delete individual items or completely wipe all local data via <strong>Settings &gt; Clear All Data</strong>, or by uninstalling the application.</p>
+      </section>
+
+      <section class="privacy-section">
+        <h2>5. Contact Information</h2>
+        <p>If you have any questions regarding this Privacy Policy, please contact our privacy compliance team at <code>privacy@softwarecompany.example.com</code>.</p>
+      </section>
+    </article>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-bottom text-center">
+      <p>&copy; 2026 Software Company LLC. All rights reserved.</p>
+    </div>
+  </footer>
+</body>
+</html>
