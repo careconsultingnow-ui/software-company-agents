@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LendTrack | Loan Management System for Private Lenders</title>
+  <meta name="description" content="Modern loan tracking software for micro-lenders, credit agencies, and quick cash financing businesses. Replace spreadsheets and paper notebooks.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2310B981'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z'/></svg>">
+  <script type="module" crossorigin src="/assets/index-1WNIWsFY.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-T27bb6i7.css">
+</head>
+<body>
+
+  <!-- App Header -->
+  <header class="app-header no-print">
+    <div class="header-inner">
+      <div class="brand-wrapper">
+        <div class="brand-logo-badge">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="1" x2="12" y2="23"></line>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">
+            LendTrack <span class="brand-tag">Belize Core</span>
+          </div>
+          <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 500;">
+            Private Quick Lending Management
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Top KPI Ticker -->
+      <div class="header-kpi-ticker">
+        <div class="ticker-item">
+          <span class="ticker-label">Active Portfolio:</span>
+          <span class="ticker-value" style="color: #34D399;" id="ticker-portfolio">$0.00</span>
+        </div>
+        <div style="width: 1px; height: 16px; background: var(--border-subtle);"></div>
+        <div class="ticker-item">
+          <span class="ticker-label">Collected (MTD):</span>
+          <span class="ticker-value" style="color: #60A5FA;" id="ticker-collected">$0.00</span>
+        </div>
+        <div style="width: 1px; height: 16px; background: var(--border-subtle);"></div>
+        <div class="ticker-item">
+          <span class="ticker-label">Delinquent (Arrears):</span>
+          <span class="ticker-value" style="color: #F87171;" id="ticker-overdue">0</span>
+        </div>
+      </div>
+
+      <!-- Header Actions -->
+      <div class="header-actions">
+        <!-- Currency Selector -->
+        <select id="currency-select" class="form-select" style="padding: 0.35rem 0.65rem; font-size: 0.8rem; width: auto; font-weight: 600;">
+          <option value="BZD ($)" selected>BZD ($)</option>
+          <option value="USD ($)">USD ($)</option>
+        </select>
+
+        <!-- Role User Dropdown -->
+        <select id="user-role-select" class="form-select" style="padding: 0.35rem 0.65rem; font-size: 0.8rem; width: auto;">
+          <option value="Patrick (Owner)">Patrick (Owner)</option>
+          <option value="Sarah Miller (Loan Officer)">Sarah (Loan Officer)</option>
+          <option value="Carlos Mendez (Collector)">Carlos (Collector)</option>
+        </select>
+
+        <!-- Quick Action Buttons -->
+        <button class="btn btn-secondary btn-sm" id="btn-quick-record-payment" title="Record a borrower payment">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+          Payment
+        </button>
+        <button class="btn btn-primary btn-sm" id="btn-quick-new-loan" title="Originate new loan">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          New Loan
+        </button>
+
+        <button class="btn btn-secondary btn-sm" id="btn-reset-demo" title="Reset to default seed data" style="color: var(--text-muted);">
+          Reset Data
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs Bar -->
+  <nav class="nav-tabs-bar no-print">
+    <div class="nav-tabs-inner">
+      <button class="nav-tab-btn active" data-tab="dashboard">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+        Dashboard
+      </button>
+
+      <button class="nav-tab-btn" data-tab="borrowers">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+        Borrowers
+      </button>
+
+      <button class="nav-tab-btn" data-tab="new-loan">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        New Loan
+      </button>
+
+      <button class="nav-tab-btn" data-tab="loan-ledger">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+        Loan Ledger
+      </button>
+
+      <button class="nav-tab-btn" data-tab="overdue">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        Overdue & WhatsApp
+        <span class="tab-badge" id="tab-overdue-count">0</span>
+      </button>
+
+      <button class="nav-tab-btn" data-tab="reports">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        Reports & Aging
+      </button>
+
+      <button class="nav-tab-btn" data-tab="csv-importer">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+        CSV Migration
+      </button>
+
+      <button class="nav-tab-btn" data-tab="audit-log">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Audit Log
+      </button>
+
+      <button class="nav-tab-btn" data-tab="landing" style="color: #34D399;">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        Sales Landing Page & Pitch
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main View Container -->
+  <main class="main-wrapper" id="main-content">
+    <!-- Active view content is injected dynamically here by app.js -->
+  </main>
+
+  <!-- Record Payment Modal -->
+  <div class="modal-overlay no-print" id="modal-payment">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title">Record Borrower Payment</div>
+        <button class="modal-close" data-close="modal-payment">✕</button>
+      </div>
+
+      <form id="form-record-payment">
+        <div class="form-group">
+          <label class="form-label">Select Loan Account</label>
+          <select id="payment-loan-select" class="form-select" required>
+            <!-- Injected dynamically -->
+          </select>
+        </div>
+
+        <div id="payment-loan-summary-box" style="background: var(--bg-card); padding: 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); margin-bottom: 1.25rem; font-size: 0.825rem;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.35rem;">
+            <span style="color: var(--text-muted);">Borrower:</span>
+            <span style="font-weight: 700;" id="pay-box-borrower">-</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.35rem;">
+            <span style="color: var(--text-muted);">Total Outstanding:</span>
+            <span style="font-weight: 700; color: #F87171;" id="pay-box-balance">-</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-muted);">Pending Installment Due:</span>
+            <span style="font-weight: 700; color: #FBBF24;" id="pay-box-installment">-</span>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label class="form-label">Amount Received ($)</label>
+            <input type="number" id="payment-amount" class="form-input font-mono" step="0.01" min="1" placeholder="0.00" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Payment Date</label>
+            <input type="date" id="payment-date" class="form-input" required>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label class="form-label">Payment Method</label>
+            <select id="payment-method" class="form-select">
+              <option value="cash" selected>Cash at Branch</option>
+              <option value="bank_transfer">Belize Bank / Heritage Transfer</option>
+              <option value="mobile_digiwallet">DigiWallet / Mobile Pay</option>
+              <option value="cheque">Cheque</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Received By</label>
+            <input type="text" id="payment-received-by" class="form-input" value="Sarah Miller" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Notes / Reference</label>
+          <input type="text" id="payment-notes" class="form-input" placeholder="e.g. Weekly market collection, Bank Ref #9921">
+        </div>
+
+        <!-- Live Waterfall Allocation Preview -->
+        <div id="payment-waterfall-preview" style="background: rgba(16, 185, 129, 0.08); border: 1px dashed var(--emerald-500); border-radius: var(--radius-md); padding: 0.85rem; margin-bottom: 1.5rem; font-size: 0.8rem;">
+          <div style="font-weight: 700; color: #34D399; margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.04em;">
+            Waterfall Allocation Preview:
+          </div>
+          <div id="waterfall-preview-text" style="color: var(--text-muted);">
+            Enter an amount above to see the automatic allocation across fees, interest, and principal.
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+          <button type="button" class="btn btn-secondary" data-close="modal-payment">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-payment">
+            Confirm & Generate Receipt
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Thermal Receipt Modal -->
+  <div class="modal-overlay" id="modal-receipt">
+    <div class="modal-container" style="max-width: 440px;">
+      <div class="modal-header no-print">
+        <div class="modal-title">Payment Receipt</div>
+        <button class="modal-close" data-close="modal-receipt">✕</button>
+      </div>
+
+      <div id="receipt-render-target">
+        <!-- Rendered receipt appears here -->
+      </div>
+
+      <div style="display: flex; justify-content: space-between; gap: 0.75rem; margin-top: 1.25rem;" class="no-print">
+        <button class="btn btn-secondary" data-close="modal-receipt">Close</button>
+        <button class="btn btn-primary" id="btn-print-receipt">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+          Print Thermal Receipt
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Borrower Profile Modal -->
+  <div class="modal-overlay no-print" id="modal-borrower-profile">
+    <div class="modal-container" style="max-width: 720px;">
+      <div class="modal-header">
+        <div class="modal-title" id="bp-modal-title">Borrower Profile</div>
+        <button class="modal-close" data-close="modal-borrower-profile">✕</button>
+      </div>
+      <div id="bp-modal-content">
+        <!-- Injected dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Reversal Modal -->
+  <div class="modal-overlay no-print" id="modal-reversal">
+    <div class="modal-container" style="max-width: 500px;">
+      <div class="modal-header">
+        <div class="modal-title" style="color: #F87171;">Reverse Payment Entry</div>
+        <button class="modal-close" data-close="modal-reversal">✕</button>
+      </div>
+      <form id="form-reversal">
+        <input type="hidden" id="reversal-payment-id">
+        <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">
+          In accordance with lending audit rules, payments are <strong style="color: #FFF;">never deleted</strong>. This reversal will create an offsetting entry and restore the borrower's installment balances.
+        </p>
+        <div class="form-group">
+          <label class="form-label">Reason for Reversal</label>
+          <select id="reversal-reason" class="form-select" required>
+            <option value="Bounced Bank Transfer / Insufficient Funds">Bounced Bank Transfer / Insufficient Funds</option>
+            <option value="Data Entry Mistake (Wrong Amount)">Data Entry Mistake (Wrong Amount)</option>
+            <option value="Allocated to Wrong Borrower Account">Allocated to Wrong Borrower Account</option>
+            <option value="Cash Count Discrepancy">Cash Count Discrepancy</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Authorized By</label>
+          <input type="text" id="reversal-authorizer" class="form-input" value="Patrick (Owner)" required>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+          <button type="button" class="btn btn-secondary" data-close="modal-reversal">Cancel</button>
+          <button type="submit" class="btn btn-danger">Confirm Reversal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Application Logic Entrypoint -->
+</body>
+</html>
