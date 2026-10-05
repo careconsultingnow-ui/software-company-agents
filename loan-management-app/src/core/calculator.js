@@ -23,9 +23,11 @@ export const INTEREST_METHODS = {
  * @returns {string} YYYY-MM-DD
  */
 export function calculateDueDate(startDate, installmentIndex, frequency = 'MONTHLY') {
-  const d = new Date(startDate);
-  // Ensure we avoid timezone shifting by setting noon
-  d.setHours(12, 0, 0, 0);
+  const parts = String(startDate).split('T')[0].split('-').map(Number);
+  const y = parts[0];
+  const m = parts[1] - 1; // 0-indexed month
+  const day = parts[2];
+  const d = new Date(y, m, day, 12, 0, 0);
 
   if (frequency === 'WEEKLY') {
     d.setDate(d.getDate() + (installmentIndex * 7));
@@ -33,15 +35,17 @@ export function calculateDueDate(startDate, installmentIndex, frequency = 'MONTH
     d.setDate(d.getDate() + (installmentIndex * 14));
   } else {
     // Monthly: increment month
-    const startDay = d.getDate();
     d.setMonth(d.getMonth() + installmentIndex);
     // Handle month-end rollover if original date had day 31 and next month has 30 or 28
-    if (d.getDate() !== startDay && startDay <= 31) {
+    if (d.getDate() !== day && day <= 31) {
       d.setDate(0); // set to last day of previous month
     }
   }
 
-  return d.toISOString().split('T')[0];
+  const resYear = d.getFullYear();
+  const resMonth = String(d.getMonth() + 1).padStart(2, '0');
+  const resDate = String(d.getDate()).padStart(2, '0');
+  return `${resYear}-${resMonth}-${resDate}`;
 }
 
 /**
